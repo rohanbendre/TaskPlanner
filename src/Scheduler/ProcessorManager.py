@@ -14,15 +14,18 @@ class ProcessorManager(object):
     def getBestAvailableFreeProcessor(self, task):
         count = 0
         removed = []
-        while count < self.processorFreeQueue.qsize():
+        freeProcessors = self.processorFreeQueue._qsize(len)
+        while count < freeProcessors:
             processor = self.processorFreeQueue.get()
             if processor.getCore() >= task.getCore():
+                for busyprocessors in removed:
+                    self.processorFreeQueue.put(busyprocessors)
                 return processor
             else:
                 removed.append(processor)
             count += 1
         for busyprocessors in removed:
-            self.processorBusyQueue.put(busyprocessors)    
+            self.processorFreeQueue.put(busyprocessors)    
         return None    
             
     def allotTaskToProcessor(self, task, processor):
@@ -34,8 +37,8 @@ class ProcessorManager(object):
     def decrementTicks(self):
         count = 0
         removed = []
-        while count < self.processorBusyQueue.qsize()+1:
-            processor = self.processorBusyQueue.get()
+        while count < self.processorBusyQueue._qsize(len):
+            processor = self.processorBusyQueue.get_nowait()
             processor.decrementTick()
             removed.append(processor)
 #             print " Insidie decrement"
@@ -49,7 +52,7 @@ class ProcessorManager(object):
     def checkForCompletedTaskAndUpdate(self):
         count = 0
         removed = []
-        while count < self.processorBusyQueue.qsize() + 1:
+        while count < self.processorBusyQueue._qsize(len):
             processor = self.processorBusyQueue.get()
             if processor.getRemainingTicks() == 0:
                 self.markTaskAsCompleted(processor.getTask())
@@ -72,7 +75,7 @@ class ProcessorManager(object):
         processor.processorBusyQueue.get()
         
     def runningTasks(self):
-        if self.processorBusyQueue.qsize() > 0:
+        if self.processorBusyQueue._qsize(len) > 0:
             return True
         else:
             return False    

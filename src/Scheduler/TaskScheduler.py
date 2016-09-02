@@ -6,18 +6,16 @@ from TaskManager import TaskManager
 from ProcessorManager import ProcessorManager
 from time import sleep
 from objc._objc import NULL
-# from _heapq import heappush, heappop
 
 class TaskScheduler(object):
     taskQueue = pq()
     processor = Processor
-    processor.processorFreeQueue = pq()
-    processor.processorBusyQueue = pq()
+    processorFreeQueue = pq()
+    processorBusyQueue = pq()
     taskManager = TaskManager(taskQueue)
-    processorManager = ProcessorManager(processor.processorFreeQueue, processor.processorBusyQueue, taskManager)
+    processorManager = ProcessorManager(processorFreeQueue, processorBusyQueue, taskManager)
         
     def getDummyTaskList(self):
-        taskList = []
         task1 = Task("task1", "Y", 2, 100)
         task2 = Task("task2", "Y", 2, 200)
         task3 = Task("task3", "N", 4, 50)
@@ -32,14 +30,10 @@ class TaskScheduler(object):
         self.taskQueue.put(task2, block=True, timeout=None)
         self.taskQueue.put(task3, block=True, timeout=None)
         
-#         while not self.taskQueue.empty():
-#             task = self.taskQueue.get()
-#             print task  
-
     def getDummyProcessorList(self):
-        self.processor.processorFreeQueue.put(Processor("compute1",2), block=True, timeout=None)
-        self.processor.processorFreeQueue.put(Processor("compute2",2), block=True, timeout=None)
-        self.processor.processorFreeQueue.put(Processor("compute3",6), block=True, timeout=None)
+        self.processorFreeQueue.put(Processor("compute1",2), block=True, timeout=None)
+        self.processorFreeQueue.put(Processor("compute2",2), block=True, timeout=None)
+        self.processorFreeQueue.put(Processor("compute3",6), block=True, timeout=None)
             
     def __str__(self):
         return ""   
@@ -56,7 +50,7 @@ while(True):
         count += 1
         
 #         print "Count : " ,count 
-        if not t.processor.processorFreeQueue.empty():
+        if not t.processorFreeQueue.empty():
             task = t.taskManager.getNextTask()
 #             print "TASK : " + str(task)
             if task == None:
@@ -68,6 +62,7 @@ while(True):
                 break
             else:
                 t.processorManager.allotTaskToProcessor(task,p)
+                
     t.processorManager.decrementTicks()   
     t.processorManager.checkForCompletedTaskAndUpdate()
     
