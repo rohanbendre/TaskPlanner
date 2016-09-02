@@ -1,16 +1,20 @@
-from Queue import Queue, PriorityQueue
+from Queue import Queue as Q
+from Queue import PriorityQueue as pq
 from Task import Task
 from Processor import Processor
 from TaskManager import TaskManager
 from ProcessorManager import ProcessorManager
-from _heapq import heappush, heappop
+from time import sleep
+from objc._objc import NULL
+# from _heapq import heappush, heappop
 
 class TaskScheduler(object):
-    taskQueue = []
-    processorFreeQueue = []
-    processorBusyQueue = []
+    taskQueue = pq()
+    processor = Processor
+    processor.processorFreeQueue = pq()
+    processor.processorBusyQueue = pq()
     taskManager = TaskManager(taskQueue)
-    processorManager = ProcessorManager(processorFreeQueue, processorBusyQueue, taskManager)
+    processorManager = ProcessorManager(processor.processorFreeQueue, processor.processorBusyQueue, taskManager)
         
     def getDummyTaskList(self):
         taskList = []
@@ -23,30 +27,51 @@ class TaskScheduler(object):
           
         task3.getPreReq().append(task1)
         task3.getPreReq().append(task2)
+
+        self.taskQueue.put(task1, block=True, timeout=None)
+        self.taskQueue.put(task2, block=True, timeout=None)
+        self.taskQueue.put(task3, block=True, timeout=None)
         
-        taskList.append(task1)
-        taskList.append(task2)
-        taskList.append(task3)
-        
-        heappush(self.taskQueue, taskList)
-        print type(self.taskQueue)
-#         for i,items in enumerate(self.taskList):
-#             print items
-#             
-#         tasks = heappop(self.taskQueue)
-#         for items in tasks:
-#             print items  
+#         while not self.taskQueue.empty():
+#             task = self.taskQueue.get()
+#             print task  
 
     def getDummyProcessorList(self):
-        processorList = []
-        processorList.append(Processor("compute1", 2))
-        processorList.append(Processor("compute2", 2))
-        processorList.append(Processor("compute3", 6))
-        
-        heappush(self.processorFreeQueue, processorList)    
+        self.processor.processorFreeQueue.put(Processor("compute1",2), block=True, timeout=None)
+        self.processor.processorFreeQueue.put(Processor("compute2",2), block=True, timeout=None)
+        self.processor.processorFreeQueue.put(Processor("compute3",6), block=True, timeout=None)
+            
     def __str__(self):
-        return ""        
+        return ""   
         
 t = TaskScheduler()
  
 t.getDummyTaskList()
+t.getDummyProcessorList()
+# print t.processor.processorFreeQueue.qsize()
+
+count = 0
+while(True):
+    while(True):
+        count += 1
+        
+#         print "Count : " ,count 
+        if not t.processor.processorFreeQueue.empty():
+            task = t.taskManager.getNextTask()
+#             print "TASK : " + str(task)
+            if task == None:
+                break
+            p = t.processorManager.getBestAvailableFreeProcessor(task)
+#             print p
+            if p == None:
+                t.taskManager.addTaskToQueue(task)
+                break
+            else:
+                t.processorManager.allotTaskToProcessor(task,p)
+    t.processorManager.decrementTicks()   
+    t.processorManager.checkForCompletedTaskAndUpdate()
+    
+    if (not t.processorManager.runningTasks()) and t.taskQueue.empty():
+        break    
+    
+exit    

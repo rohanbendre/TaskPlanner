@@ -2,7 +2,8 @@ import Task
 
 class Processor(object):
     name = ""
-    core, remainingTicks = 0,0
+    core = 0
+    remainingTicks = 0
     task = Task.Task
     
     def __init__(self, name, core):
@@ -29,6 +30,12 @@ class Processor(object):
     
     def decrementTick(self):
         self.remainingTicks -= 1
+        if self.remainingTicks == 0:
+            print "Wait"
+#         print self.remainingTicks
         
     def __str__(self):
         return '{} {} {} {}'.format(self.name, self.core, self.remainingTicks, self.task)            
+    
+#     def __cmp__(self, other):
+#         return cmp(self.core, other.core)

@@ -33,3 +33,7 @@ class Task(object):
     
     def getTicks(self):
         return self.ticks
+    
+#     def __cmp__(self, other):
+#         if type != None:
+#             return cmp(self.name, other.name)
