@@ -1,11 +1,9 @@
-from Queue import Queue as Q
 from Queue import PriorityQueue as pq
-from Task import Task
 from Processor import Processor
-from TaskManager import TaskManager
 from ProcessorManager import ProcessorManager
-from time import sleep
-from objc._objc import NULL
+from Task import Task
+from TaskManager import TaskManager
+import yaml
 
 class TaskScheduler(object):
     taskQueue = pq()
@@ -15,58 +13,77 @@ class TaskScheduler(object):
     taskManager = TaskManager(taskQueue)
     processorManager = ProcessorManager(processorFreeQueue, processorBusyQueue, taskManager)
         
-    def getDummyTaskList(self):
-        task1 = Task("task1", "Y", 2, 100)
-        task2 = Task("task2", "Y", 2, 200)
-        task3 = Task("task3", "N", 4, 50)
+    def getProcessorList(self, filePath):
+        processorsFile = open(filePath)
+        processorsData = yaml.load(processorsFile)
         
-        task1.getPostReq().append(task3)
-        task2.getPostReq().append(task3)
-          
-        task3.getPreReq().append(task1)
-        task3.getPreReq().append(task2)
-
-        self.taskQueue.put(task1, block=True, timeout=None)
-        self.taskQueue.put(task2, block=True, timeout=None)
-        self.taskQueue.put(task3, block=True, timeout=None)
-        
-    def getDummyProcessorList(self):
-        self.processorFreeQueue.put(Processor("compute1",2), block=True, timeout=None)
-        self.processorFreeQueue.put(Processor("compute2",2), block=True, timeout=None)
-        self.processorFreeQueue.put(Processor("compute3",6), block=True, timeout=None)
+        for processor, cores in processorsData.iteritems():
+            self.processorFreeQueue.put(Processor(processor, cores), block=True, timeout=None)
+         
+        processorsFile.close()
             
-    def __str__(self):
-        return ""   
+    def getTaskList(self,filePath):
+        taskName = ""
+        cores, ticks = 0,0
+        status = "Y"
+        taskObjects = {}
+        taskMap = {}
+        taskFile = open(filePath)
         
-t = TaskScheduler()
- 
-t.getDummyTaskList()
-t.getDummyProcessorList()
-# print t.processor.processorFreeQueue.qsize()
-
-count = 0
-while(True):
-    while(True):
-        count += 1
+        fileData = yaml.load(taskFile)
         
-#         print "Count : " ,count 
-        if not t.processorFreeQueue.empty():
-            task = t.taskManager.getNextTask()
-#             print "TASK : " + str(task)
-            if task == None:
-                break
-            p = t.processorManager.getBestAvailableFreeProcessor(task)
-#             print p
-            if p == None:
-                t.taskManager.addTaskToQueue(task)
-                break
-            else:
-                t.processorManager.allotTaskToProcessor(task,p)
+        for task, details in fileData.iteritems():
+            taskName = task
+            if 'cores_required' in details:
+                cores = int(details['cores_required'])
+            if 'execution_time' in details:
+                ticks = int(details['execution_time'])
+            if 'parent_tasks' in details:
+                status = "N"
+                taskMap[taskName] = details['parent_tasks']
                 
-    t.processorManager.decrementTicks()   
-    t.processorManager.checkForCompletedTaskAndUpdate()
+            task = self.getTask(taskName, status, cores, ticks)
+            self.taskQueue.put(task, block=True, timeout=False)
+            taskObjects[taskName] = task          
+            if status == 'N':
+                self.addDependentTasks(taskMap, taskObjects, task, details['parent_tasks'])
+        
+        taskFile.close()
+        
+    def addDependentTasks(self, taskMap, taskObjects, task, dependentTasks):
+        if dependentTasks != None:
+            for taskName in dependentTasks.split(","):
+                task.getPreReq().append(taskObjects[taskName.strip()])
+                taskObjects[taskName.strip()].getPostReq().append(task)    
     
-    if (not t.processorManager.runningTasks()) and t.taskQueue.empty():
-        break    
+    def getTask(self, taskName, dependent, core, ticks):
+        return Task(taskName, dependent, core, ticks)
     
-exit    
+    def __str__(self):
+        return ""
+
+    def executeTasks(self):
+        count = 0
+        while(True):
+            while(True):
+                count += 1
+                
+                if not self.processorFreeQueue.empty():
+                    task = self.taskManager.getNextTask()
+                    if task == None:
+                        break
+                    p = self.processorManager.getBestAvailableFreeProcessor(task)
+                    if p == None:
+                        self.taskManager.addTaskToQueue(task)
+                        break
+                    else:
+                        self.processorManager.allotTaskToProcessor(task,p)
+                        
+            self.processorManager.decrementTicks()   
+            self.processorManager.checkForCompletedTaskAndUpdate()
+            
+            if (not self.processorManager.runningTasks()) and self.taskQueue.empty():
+                break    
+            
+        exit    
+        
