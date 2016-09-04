@@ -1,5 +1,6 @@
 import Task
 
+
 class Processor(object):
     name = ""
     core = 0
@@ -37,5 +38,7 @@ class Processor(object):
     def __str__(self):
         return '{} {} {} {}'.format(self.name, self.core, self.remainingTicks, self.task)            
     
-#     def __cmp__(self, other):
-#         return cmp(self.core, other.core)
+    def __cmp__(self, other):
+        if other == None:
+            return -1
+        return cmp(self.core,other.core)

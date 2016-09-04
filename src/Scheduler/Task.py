@@ -1,7 +1,5 @@
 class Task(object):
     name,status = "",""
-    preReq = []
-    postReq = []
     core, ticks = 0,0
     
     def __init__(self, name, status, core, ticks):
@@ -9,6 +7,8 @@ class Task(object):
         self.status = status
         self.core = core
         self.ticks = ticks
+        self.preReq = []
+        self.postReq = []
     
     def getStatus(self):
         return self.status
@@ -34,6 +34,7 @@ class Task(object):
     def getTicks(self):
         return self.ticks
     
-#     def __cmp__(self, other):
-#         if type != None:
-#             return cmp(self.name, other.name)
+    def __cmp__(self, other):
+        if other == None:
+            return -1
+        return cmp(other.status, self.status)

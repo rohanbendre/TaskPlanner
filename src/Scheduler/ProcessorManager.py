@@ -1,5 +1,7 @@
-from TaskManager import TaskManager
 from Queue import PriorityQueue as pq
+
+from TaskManager import TaskManager
+
 
 class ProcessorManager(object):
     processorFreeQueue = pq()
@@ -24,8 +26,7 @@ class ProcessorManager(object):
             else:
                 removed.append(processor)
             count += 1
-        for busyprocessors in removed:
-            self.processorFreeQueue.put(busyprocessors)    
+        self.maintainFreeQueue(removed)    
         return None    
             
     def allotTaskToProcessor(self, task, processor):
@@ -41,10 +42,8 @@ class ProcessorManager(object):
             processor = self.processorBusyQueue.get_nowait()
             processor.decrementTick()
             removed.append(processor)
-#             print " Insidie decrement"
             count += 1
-        for busyprocessors in removed:
-            self.processorBusyQueue.put(busyprocessors)    
+        self.maintainBusyQueue(removed)    
             
     def markTaskAsCompleted(self, task):        
         self.taskManager.markTaskAsCompleteAndUpdateDependencies(task)
@@ -60,12 +59,10 @@ class ProcessorManager(object):
             else:
                 removed.append(processor)    
             count += 1    
-        for busyprocessors in removed:
-            self.processorBusyQueue.put(busyprocessors)    
+        self.maintainBusyQueue(removed)    
             
     def updateProcessorInformation(self, processor):        
         processor.setTask(None)
-#         self.removeProcessorFromProcessorBusyQueue(processor)
         self.addProcessorToProcessorFreeQueue(processor)
         
     def addProcessorToProcessorFreeQueue(self, processor):    
@@ -79,3 +76,11 @@ class ProcessorManager(object):
             return True
         else:
             return False    
+        
+    def maintainFreeQueue(self, removedProcessors):
+        for busyprocessors in removedProcessors:
+            self.processorFreeQueue.put(busyprocessors)
+            
+    def maintainBusyQueue(self, removedProcessors):
+        for busyprocessors in removedProcessors:
+            self.processorBusyQueue.put(busyprocessors)        
