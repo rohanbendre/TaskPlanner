@@ -1,6 +1,5 @@
 from Queue import PriorityQueue as pq
 
-
 class TaskManager(object):
     taskQueue = pq()
     

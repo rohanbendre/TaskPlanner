@@ -1,8 +1,4 @@
 from Queue import PriorityQueue as pq
-from Queue import Queue as Q
-from objc._objc import NULL
-from time import sleep
-
 from Processor import Processor
 from ProcessorManager import ProcessorManager
 from Task import Task

@@ -1,7 +1,5 @@
 from Queue import PriorityQueue as pq
-
 from TaskManager import TaskManager
-
 
 class ProcessorManager(object):
     processorFreeQueue = pq()
