@@ -36,8 +36,6 @@ class TaskManager(object):
         
     def markTaskAsReady(self, task):    
         task.setStatus("Y")
-        self.taskQueue.get()
-        self.taskQueue.put(task)
     
     def markTaskAsComplete(self, task):
         task.setStatus("C")

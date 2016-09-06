@@ -21,9 +21,9 @@ class ProcessorManager(object):
                 for busyprocessors in removed:
                     self.processorFreeQueue.put(busyprocessors)
                 return processor
-            elif task.getCore > self.maxCoresAvailable:
+            elif task.getCore() > self.maxCoresAvailable:
                 removed.append(processor)
-                self.taskManager.markTaskAsComplete(task)
+                self.markTaskAsCompleted(task)
                 return -1
             else:
                 removed.append(processor)

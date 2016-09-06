@@ -37,4 +37,7 @@ class Task(object):
     def __cmp__(self, other):
         if other == None:
             return -1
+        
+        if other.status == 'Y':
+            return cmp(self.ticks, other.ticks)    
         return cmp(other.status, self.status)

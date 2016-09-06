@@ -60,8 +60,9 @@ class TaskScheduler(object):
                     else:
                         ticks = 100    
                     if 'parent_tasks' in details:
-                        status = "N"
-                        taskMap[taskName] = details['parent_tasks']
+                        if (bool(details['parent_tasks'])):
+                            status = "N"
+                            taskMap[taskName] = details['parent_tasks']
                         
                     task = self.getTask(taskName, status, cores, ticks)
                     self.taskQueue.put(task, block=True, timeout=False)
@@ -89,9 +90,7 @@ class TaskScheduler(object):
     def executeTasks(self):
         count = 0
         while(True):
-            while(True):
-                count += 1
-                
+            while(True):                
                 if not self.processorFreeQueue.empty():
                     task = self.taskManager.getNextTask()
                     if task == None:
@@ -105,7 +104,11 @@ class TaskScheduler(object):
                         break
                     else:
                         self.processorManager.allotTaskToProcessor(task,p)
-                        
+                
+                else:
+                    self.processorManager.decrementTicks()   
+                    self.processorManager.checkForCompletedTaskAndUpdate()
+                    
             self.processorManager.decrementTicks()   
             self.processorManager.checkForCompletedTaskAndUpdate()
             
