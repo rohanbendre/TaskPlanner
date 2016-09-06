@@ -2,10 +2,10 @@ from Queue import PriorityQueue as pq
 from TaskManager import TaskManager
 
 class ProcessorManager(object):
+    maxCoresAvailable = 0
     processorFreeQueue = pq()
     processorBusyQueue = pq()
     taskManager = TaskManager
-    
     def __init__(self, processorFreeQueue, processorBusyQueue, taskManager):
         self.processorFreeQueue = processorFreeQueue
         self.processorBusyQueue = processorBusyQueue
@@ -21,6 +21,10 @@ class ProcessorManager(object):
                 for busyprocessors in removed:
                     self.processorFreeQueue.put(busyprocessors)
                 return processor
+            elif task.getCore > self.maxCoresAvailable:
+                removed.append(processor)
+                self.taskManager.markTaskAsComplete(task)
+                return -1
             else:
                 removed.append(processor)
             count += 1
@@ -36,9 +40,10 @@ class ProcessorManager(object):
     def decrementTicks(self):
         count = 0
         removed = []
-        while count < self.processorBusyQueue._qsize(len):
+        busyProcessors = self.processorBusyQueue._qsize(len) 
+        while count < busyProcessors:
             processor = self.processorBusyQueue.get_nowait()
-            processor.decrementTick()
+            processor.decrementTick(processor.getCore())
             removed.append(processor)
             count += 1
         self.maintainBusyQueue(removed)    
@@ -49,7 +54,8 @@ class ProcessorManager(object):
     def checkForCompletedTaskAndUpdate(self):
         count = 0
         removed = []
-        while count < self.processorBusyQueue._qsize(len):
+        busyProcessors = self.processorBusyQueue._qsize(len) 
+        while count < busyProcessors:
             processor = self.processorBusyQueue.get()
             if processor.getRemainingTicks() == 0:
                 self.markTaskAsCompleted(processor.getTask())

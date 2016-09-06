@@ -4,6 +4,7 @@ from ProcessorManager import ProcessorManager
 from Task import Task
 from TaskManager import TaskManager
 import yaml
+import time
 
 class TaskScheduler(object):
     taskQueue = pq()
@@ -12,43 +13,62 @@ class TaskScheduler(object):
     processorBusyQueue = pq()
     taskManager = TaskManager(taskQueue)
     processorManager = ProcessorManager(processorFreeQueue, processorBusyQueue, taskManager)
-        
+    
     def getProcessorList(self, filePath):
-        processorsFile = open(filePath)
-        processorsData = yaml.load(processorsFile)
-        
-        for processor, cores in processorsData.iteritems():
-            self.processorFreeQueue.put(Processor(processor, cores), block=True, timeout=None)
-         
-        processorsFile.close()
-            
+        try:
+            processorsFile = open(filePath)
+        except IOError:
+            print "File not found. Please specify the correct path!"
+            exit(1)
+        else:        
+            processorsData = yaml.load(processorsFile)
+            if processorsData != None:
+                for processor, cores in processorsData.iteritems():
+                    if ProcessorManager.maxCoresAvailable < cores:
+                        ProcessorManager.maxCoresAvailable = cores
+                    self.processorFreeQueue.put(Processor(processor, cores), block=True, timeout=None)
+            else:
+                print "Input file is empty. Please include computing resources present!"        
+                exit(1)
+                
+            processorsFile.close()
+                
     def getTaskList(self,filePath):
         taskName = ""
         cores, ticks = 0,0
         status = "Y"
         taskObjects = {}
         taskMap = {}
-        taskFile = open(filePath)
         
-        fileData = yaml.load(taskFile)
-        
-        for task, details in fileData.iteritems():
-            taskName = task
-            if 'cores_required' in details:
-                cores = int(details['cores_required'])
-            if 'execution_time' in details:
-                ticks = int(details['execution_time'])
-            if 'parent_tasks' in details:
-                status = "N"
-                taskMap[taskName] = details['parent_tasks']
-                
-            task = self.getTask(taskName, status, cores, ticks)
-            self.taskQueue.put(task, block=True, timeout=False)
-            taskObjects[taskName] = task          
-            if status == 'N':
-                self.addDependentTasks(taskMap, taskObjects, task, details['parent_tasks'])
-        
-        taskFile.close()
+        try:
+            taskFile = open(filePath)
+        except IOError:
+            print "File not found. Please specify the correct path!"   
+            exit(1) 
+        else:
+            fileData = yaml.load(taskFile)
+            if fileData != None:
+                for task, details in fileData.iteritems():
+                    status = "Y"
+                    taskName = task
+                    if 'cores_required' in details:
+                        cores = int(details['cores_required'])
+                    if 'execution_time' in details:
+                        ticks = int(details['execution_time'])
+                    if 'parent_tasks' in details:
+                        status = "N"
+                        taskMap[taskName] = details['parent_tasks']
+                        
+                    task = self.getTask(taskName, status, cores, ticks)
+                    self.taskQueue.put(task, block=True, timeout=False)
+                    taskObjects[taskName] = task          
+                    if status == 'N':
+                        self.addDependentTasks(taskMap, taskObjects, task, details['parent_tasks'])
+            else:
+                print "Input file is empty. Please include tasks to be processed!"
+                exit(1)
+                            
+            taskFile.close()
         
     def addDependentTasks(self, taskMap, taskObjects, task, dependentTasks):
         if dependentTasks != None:
@@ -75,6 +95,9 @@ class TaskScheduler(object):
                     p = self.processorManager.getBestAvailableFreeProcessor(task)
                     if p == None:
                         self.taskManager.addTaskToQueue(task)
+                        break
+                    elif p == -1:
+                        print task.name + " cannot be assigned because resources required exceeds available resources!"
                         break
                     else:
                         self.processorManager.allotTaskToProcessor(task,p)

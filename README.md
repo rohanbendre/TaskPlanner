@@ -10,7 +10,7 @@ Go inside src directory and run : sudo python setup.py install
 **TUTORIAL:**
 A sample program written in python to schedule and execute tasks by reading 2 yaml files for tasks and processors. You can use files given in SampleFiles folder. 
 
-Create a file and name it TaskPlannerTutorial.py. Copy and paste the given code in it. Save and run from terminal using "python 
+Create a file  and name it TaskPlannerTutorial.py. Copy and paste the given code in it. Save and run from terminal using "python 
 TaskPlannerTutorial.py"
 
 ```

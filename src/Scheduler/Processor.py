@@ -28,13 +28,13 @@ class Processor(object):
     def getCore(self):
         return self.core
     
-    def decrementTick(self):
-        self.remainingTicks -= 1
+    def decrementTick(self, cores):
+        self.remainingTicks -= cores
         
     def __str__(self):
         return '{} {} {} {}'.format(self.name, self.core, self.remainingTicks, self.task)            
     
     def __cmp__(self, other):
-        if other == None:
+        if other == None or other == -1:
             return -1
         return cmp(self.core,other.core)
