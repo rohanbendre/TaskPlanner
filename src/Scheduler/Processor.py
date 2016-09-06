@@ -29,7 +29,7 @@ class Processor(object):
         return self.core
     
     def decrementTick(self, cores):
-        self.remainingTicks -= cores
+        self.remainingTicks -= 1
         
     def __str__(self):
         return '{} {} {} {}'.format(self.name, self.core, self.remainingTicks, self.task)            

@@ -53,8 +53,12 @@ class TaskScheduler(object):
                     taskName = task
                     if 'cores_required' in details:
                         cores = int(details['cores_required'])
+                    else:
+                        cores = 1    
                     if 'execution_time' in details:
                         ticks = int(details['execution_time'])
+                    else:
+                        ticks = 100    
                     if 'parent_tasks' in details:
                         status = "N"
                         taskMap[taskName] = details['parent_tasks']
