@@ -1,5 +1,7 @@
 from scheduler import task
 
+# This class is used to create processor objects and assign attributes it cores and name. 
+# The task to be executed is associated with the processor
 class Processor(object):
     name = ""
     core = 0

@@ -1,6 +1,7 @@
 from Queue import PriorityQueue as pq
 from scheduler import task_manager
 
+# This class is used to manage all the processor related operations for tasks
 class ProcessorManager(object):
     maxCoresAvailable = 0
     processorFreeQueue = pq()
@@ -10,7 +11,8 @@ class ProcessorManager(object):
         self.processorFreeQueue = processorFreeQueue
         self.processorBusyQueue = processorBusyQueue
         self.taskManager = taskManager
-        
+    
+    # Method to get processor for a task that is ready to be executed    
     def getBestAvailableFreeProcessor(self, task):
         count = 0
         removed = []
@@ -21,6 +23,7 @@ class ProcessorManager(object):
                 for busyprocessors in removed:
                     self.processorFreeQueue.put(busyprocessors)
                 return processor
+            # If requirements for task exceed available resources, we discard the task and tasks dependent on it 
             elif task.getCore() > self.maxCoresAvailable:
                 removed.append(processor)
                 self.markTaskAsCompleted(task)
@@ -31,13 +34,15 @@ class ProcessorManager(object):
             count += 1
         self.maintainFreeQueue(removed)    
         return None    
-            
+    
+    # Allot task to processor and start execution        
     def allotTaskToProcessor(self, task, processor):
         self.processorBusyQueue.put(processor)
         processor.setTask(task)
         processor.setRemainingTicks(task.getTicks())
         print "Task : " + task.getName() + " , Processor : " + processor.getName()
     
+    # Simulating ticks for a process
     def decrementTicks(self):
         count = 0
         removed = []
@@ -48,7 +53,8 @@ class ProcessorManager(object):
             removed.append(processor)
             count += 1
         self.maintainBusyQueue(removed)    
-            
+     
+    # Methods to handle freeing of processor, marking tasks as complete when execution has finished (tick remaining is 0)        
     def markTaskAsCompleted(self, task):        
         self.taskManager.markTaskAsCompleteAndUpdateDependencies(task)
         

@@ -1,11 +1,13 @@
 from Queue import PriorityQueue as pq
 
+# This class is used to manage tasks to be executed
 class TaskManager(object):
     taskQueue = pq()
     
     def __init__(self, taskQueue):
         self.taskQueue = taskQueue
-        
+    
+    # This method returns the task in queue which is ready to be executed    
     def getNextTask(self):
         if not self.taskQueue.empty(): 
             task = self.taskQueue.get(block=True, timeout=None)
@@ -18,7 +20,8 @@ class TaskManager(object):
 
     def addTaskToQueue(self, task):
         self.taskQueue.put(task)
-        
+
+    # This method marks the task as complete when ticks become 0 and makes the status of task that depend on it to ready        
     def markTaskAsCompleteAndUpdateDependencies(self, task):    
         self.markTaskAsComplete(task)
         self.updatePostTasks(task)

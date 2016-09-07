@@ -4,8 +4,8 @@ from scheduler import processor_manager
 from scheduler import task
 from scheduler import task_manager
 import yaml
-import time
 
+# This is the main driver class
 class TaskScheduler(object):
     taskQueue = pq()
     processorQueue = processor
@@ -14,6 +14,7 @@ class TaskScheduler(object):
     taskManager = task_manager.TaskManager(taskQueue)
     processorManager = processor_manager.ProcessorManager(processorFreeQueue, processorBusyQueue, taskManager)
     
+    # Read yaml file and create list of available computing resources
     def getProcessorList(self, filePath):
         try:
             processorsFile = open(filePath)
@@ -32,7 +33,8 @@ class TaskScheduler(object):
                 exit(1)
                 
             processorsFile.close()
-                
+    
+    # Read yaml file that contains task list            
     def getTaskList(self,filePath):
         taskName = ""
         cores, ticks = 0,0
@@ -47,6 +49,7 @@ class TaskScheduler(object):
             exit(1) 
         else:
             fileData = yaml.load(taskFile)
+            # Updating task queue with various details of task like cores needed, execution time, parent tasks
             if fileData != None:
                 for task, details in fileData.iteritems():
                     status = "Y"
@@ -74,7 +77,8 @@ class TaskScheduler(object):
                 exit(1)
                             
             taskFile.close()
-        
+    
+    # If tasks depend on some other tasks, we create a list of dependencies called Post-requirements and Pre-requirements    
     def addDependentTasks(self, taskMap, taskObjects, task, dependentTasks):
         if dependentTasks != None:
             for taskName in dependentTasks.split(","):
@@ -87,6 +91,7 @@ class TaskScheduler(object):
     def __str__(self):
         return ""
 
+    # This function will execute till the taskQueue is not empty and processor busy queue is not empty
     def executeTasks(self):
         while(True):
             while(True):                
