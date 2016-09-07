@@ -11,7 +11,7 @@ class TaskManager(object):
     def getNextTask(self):
         if not self.taskQueue.empty(): 
             task = self.taskQueue.get(block=True, timeout=None)
-            if task.status == 'Y':
+            if task.status == 'Y' or task.status == 'S':
                 return task
             else:
                 self.taskQueue.put(task)
@@ -33,6 +33,9 @@ class TaskManager(object):
                 
     def updatePreTask(self, task):            
         for preReqTask in task.getPreReq():
+            if preReqTask.getStatus() == 'S':
+                self.markTaskAsDiscarded(task)
+                return
             if preReqTask.getStatus() != 'C':
                 return
         self.markTaskAsReady(task)    
@@ -42,3 +45,7 @@ class TaskManager(object):
     
     def markTaskAsComplete(self, task):
         task.setStatus("C")
+    
+    def markTaskAsDiscarded(self, task):
+        task.setStatus("S") 
+        print task.name + " cannot be assigned because resources required exceeds available resources or parent task has failed execution!"   

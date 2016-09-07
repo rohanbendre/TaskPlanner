@@ -26,7 +26,7 @@ class TaskScheduler(object):
             if processorsData != None:
                 for processor, cores in processorsData.iteritems():
                     if processor_manager.ProcessorManager.maxCoresAvailable < cores:
-                        processor_manager.maxCoresAvailable = cores
+                        processor_manager.ProcessorManager.maxCoresAvailable = cores
                     self.processorFreeQueue.put(self.processorQueue.Processor(processor, cores), block=True, timeout=None)
             else:
                 print "Input file is empty. Please include computing resources present!"        
@@ -99,12 +99,15 @@ class TaskScheduler(object):
                     task = self.taskManager.getNextTask()
                     if task == None:
                         break
+                    if task.status == 'S':
+                        self.taskManager.updatePostTasks(task)
+                        break
                     p = self.processorManager.getBestAvailableFreeProcessor(task)
                     if p == None:
                         self.taskManager.addTaskToQueue(task)
                         break
                     elif p == -1:
-                        print task.name + " cannot be assigned because resources required exceeds available resources!"
+#                         print task.name + " cannot be assigned because resources required exceeds available resources!"
                         break
                     else:
                         self.processorManager.allotTaskToProcessor(task,p)

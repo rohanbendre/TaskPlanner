@@ -26,7 +26,8 @@ class ProcessorManager(object):
             # If requirements for task exceed available resources, we discard the task and tasks dependent on it 
             elif task.getCore() > self.maxCoresAvailable:
                 removed.append(processor)
-                self.markTaskAsCompleted(task)
+                self.taskManager.markTaskAsDiscarded(task)
+                self.taskManager.updatePostTasks(task)
                 self.updateProcessorInformation(processor)
                 return -1
             else:
