@@ -1,5 +1,5 @@
 from setuptools import setup
 
 setup(name='TaskScheduler', 
-	packages=['Scheduler'],
+	packages=['scheduler'],
 	install_requires=['pyyaml',])

@@ -1,10 +1,10 @@
-import Task
+from scheduler import task
 
 class Processor(object):
     name = ""
     core = 0
     remainingTicks = 0
-    task = Task.Task
+    task = task.Task
     
     def __init__(self, name, core):
         self.name = name

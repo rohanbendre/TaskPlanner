@@ -1,11 +1,11 @@
 from Queue import PriorityQueue as pq
-from TaskManager import TaskManager
+from scheduler import task_manager
 
 class ProcessorManager(object):
     maxCoresAvailable = 0
     processorFreeQueue = pq()
     processorBusyQueue = pq()
-    taskManager = TaskManager
+    taskManager = task_manager
     def __init__(self, processorFreeQueue, processorBusyQueue, taskManager):
         self.processorFreeQueue = processorFreeQueue
         self.processorBusyQueue = processorBusyQueue
@@ -24,6 +24,7 @@ class ProcessorManager(object):
             elif task.getCore() > self.maxCoresAvailable:
                 removed.append(processor)
                 self.markTaskAsCompleted(task)
+                self.updateProcessorInformation(processor)
                 return -1
             else:
                 removed.append(processor)
