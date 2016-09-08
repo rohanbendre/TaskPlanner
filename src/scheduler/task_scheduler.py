@@ -55,17 +55,23 @@ class TaskScheduler(object):
                     status = "Y"
                     taskName = task.lower()
                     if 'cores_required' in details:
-                        if int(details['cores_required']) > 0:
-                            cores = int(details['cores_required'])
+                        if bool(details['cores_required']):
+                            if int(details['cores_required']) > 0:
+                                cores = int(details['cores_required'])
+                            else:
+                                cores = 1
                         else:
-                            cores = 0    
+                            cores = 1            
                     else:
                         cores = 1    
                     if 'execution_time' in details:
-                        if int(details['execution_time']) > 0:
-                            ticks = int(details['execution_time'])
+                        if bool(details['execution_time']):
+                            if int(details['execution_time']) > 0:
+                                ticks = int(details['execution_time'])
+                            else:
+                                ticks = 100   
                         else:
-                            ticks = 100    
+                            ticks = 100         
                     else:
                         ticks = 100    
                     if 'parent_tasks' in details:
