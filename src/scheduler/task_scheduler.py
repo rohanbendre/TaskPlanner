@@ -4,7 +4,6 @@ from scheduler import processor_manager
 from scheduler import task
 from scheduler import task_manager
 import yaml
-from collections import defaultdict
 
 # This is the main driver class
 class TaskScheduler(object):

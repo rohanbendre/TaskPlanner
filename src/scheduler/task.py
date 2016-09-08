@@ -1,7 +1,6 @@
 # This class is used to create object of task. 
 # It has details like task name, cores needed, execution time and status which we are using to indicate if task is ready to be executed or not.
 # Pre and post dependencies are also maintained by this class
-from operator import xor
 class Task(object):
     name,status = "",""
     core, ticks = 0,0
