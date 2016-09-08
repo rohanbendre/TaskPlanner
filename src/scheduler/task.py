@@ -1,6 +1,7 @@
 # This class is used to create object of task. 
 # It has details like task name, cores needed, execution time and status which we are using to indicate if task is ready to be executed or not.
 # Pre and post dependencies are also maintained by this class
+from operator import xor
 class Task(object):
     name,status = "",""
     core, ticks = 0,0
@@ -40,7 +41,7 @@ class Task(object):
     def __cmp__(self, other):
         if other == None:
             return -1
-        
+        # Priority of tasks based on execution time and status
         if other.status == 'Y':
-            return cmp(self.ticks, other.ticks)    
+            return cmp(self.ticks, other.ticks)  
         return cmp(other.status, self.status)
