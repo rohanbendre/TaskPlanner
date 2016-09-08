@@ -85,6 +85,13 @@ class TaskScheduler(object):
                             task.getPreReq().append(taskObjects[taskString])
                             taskObjects[taskString].getPostReq().append(task)
                 
+                for parenttask in taskObjects.itervalues():
+                    if len(parenttask.getPreReq()) > 0 and len(parenttask.getPostReq()) > 0:
+                        for task in parenttask.getPreReq():
+                            if parenttask in task.getPreReq():
+                                task.setStatus('D')
+                                parenttask.setStatus('D')
+                
             else:
                 print "Input file is empty. Please include tasks to be processed!"
                 exit(1)
@@ -114,12 +121,14 @@ class TaskScheduler(object):
                     if task.status == 'S':
                         self.taskManager.updatePostTasks(task)
                         break
+                    if task.status == 'D':
+                        self.taskManager.markTaskAsDeadlocked(task)
+                        break
                     p = self.processorManager.getBestAvailableFreeProcessor(task)
                     if p == None:
                         self.taskManager.addTaskToQueue(task)
                         break
                     elif p == -1:
-#                         print task.name + " cannot be assigned because resources required exceeds available resources!"
                         break
                     else:
                         self.processorManager.allotTaskToProcessor(task,p)

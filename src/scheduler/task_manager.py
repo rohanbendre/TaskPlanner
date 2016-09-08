@@ -11,7 +11,7 @@ class TaskManager(object):
     def getNextTask(self):
         if not self.taskQueue.empty(): 
             task = self.taskQueue.get(block=True, timeout=None)
-            if task.status == 'Y' or task.status == 'S':
+            if task.status == 'Y' or task.status == 'S' or task.status == 'D':
                 return task
             else:
                 self.taskQueue.put(task)
@@ -49,3 +49,8 @@ class TaskManager(object):
     def markTaskAsDiscarded(self, task):
         task.setStatus("S") 
         print task.name + " cannot be assigned because resources required exceeds available resources or parent task has failed execution!"   
+
+    def markTaskAsDeadlocked(self, task):
+        task.setStatus('D')
+        print task.name + " cannot be scheduled because of deadlock!"
+        
