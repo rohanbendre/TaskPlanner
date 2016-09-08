@@ -4,6 +4,7 @@ from scheduler import processor_manager
 from scheduler import task
 from scheduler import task_manager
 import yaml
+from collections import defaultdict
 
 # This is the main driver class
 class TaskScheduler(object):
@@ -55,11 +56,17 @@ class TaskScheduler(object):
                     status = "Y"
                     taskName = task.lower()
                     if 'cores_required' in details:
-                        cores = int(details['cores_required'])
+                        if int(details['cores_required']) > 0:
+                            cores = int(details['cores_required'])
+                        else:
+                            cores = 0    
                     else:
                         cores = 1    
                     if 'execution_time' in details:
-                        ticks = int(details['execution_time'])
+                        if int(details['execution_time']) > 0:
+                            ticks = int(details['execution_time'])
+                        else:
+                            ticks = 100    
                     else:
                         ticks = 100    
                     if 'parent_tasks' in details:
@@ -72,6 +79,13 @@ class TaskScheduler(object):
                     taskObjects[taskName] = task          
                     if status == 'N':
                         self.addDependentTasks(taskMap, taskObjects, task, details['parent_tasks'].lower())
+                
+                for task in taskObjects.itervalues():
+                    if len(task.PreReq) > 0:
+                        for i, taskString in enumerate(task.PreReq):
+                            task.getPreReq().append(taskObjects[taskString])
+                            taskObjects[taskString].getPostReq().append(task)
+                
             else:
                 print "Input file is empty. Please include tasks to be processed!"
                 exit(1)
@@ -81,9 +95,8 @@ class TaskScheduler(object):
     # If tasks depend on some other tasks, we create a list of dependencies called Post-requirements and Pre-requirements    
     def addDependentTasks(self, taskMap, taskObjects, task, dependentTasks):
         if dependentTasks != None:
-            for taskName in dependentTasks.split(","):
-                task.getPreReq().append(taskObjects[taskName.strip()])
-                taskObjects[taskName.strip()].getPostReq().append(task)    
+            for taskName in dependentTasks.split(","):   
+                task.PreReq.append(taskName.strip())
     
     def getTask(self, taskName, dependent, core, ticks):
         return task.Task(taskName, dependent, core, ticks)

@@ -23,11 +23,13 @@ Create a file  and name it TaskPlannerTutorial.py. Copy and paste the given code
 TaskPlannerTutorial.py"
 
 ```
-import Scheduler
-from Scheduler import TaskScheduler
+import scheduler
 
-t = TaskScheduler.TaskScheduler()
-t.getTaskList("path to yaml file with tasks details")
-t.getProcessorList("path to yaml file with processor details")
+from scheduler import task_scheduler
+
+t = task_scheduler.TaskScheduler()
+# t.getTaskList("path_to_yaml_file_for_tasks")
+# t.getProcessorList("path_to_yaml_file_for_processors")
+
 t.executeTasks()
 ```

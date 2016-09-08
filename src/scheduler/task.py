@@ -13,6 +13,7 @@ class Task(object):
         self.ticks = ticks
         self.preReq = []
         self.postReq = []
+        self.PreReq = []
     
     def getStatus(self):
         return self.status
